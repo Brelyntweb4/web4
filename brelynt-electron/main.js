@@ -27,8 +27,6 @@ app.whenReady().then(() => {
 
 ipcMain.handle('get-brelynt-structure', async () => {
   try {
-      return [];
-    }
     function readDirRecursive(dir) {
       const items = fs.readdirSync(dir, { withFileTypes: true });
       return items.map(item => {
@@ -38,17 +36,18 @@ ipcMain.handle('get-brelynt-structure', async () => {
             type: 'dir',
             name: item.name,
             children: readDirRecursive(fullPath)
-          }
+          };
         } else {
           return {
             type: 'file',
             name: item.name,
             path: fullPath
-          }
+          };
         }
       });
     }
-    const structure = readDirRecursive(brelyntPath);
+
+    const structure = readDirRecursive(BRELYNT_PATH);
     console.log('[DEBUG] Структура папки:', JSON.stringify(structure, null, 2));
     return structure;
   } catch (error) {
