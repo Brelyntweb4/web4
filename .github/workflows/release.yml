@@ -1,0 +1,16 @@
+name: Build release zip
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: zip -r web4.zip .
+      - uses: softprops/action-gh-release@v1
+        with:
+          files: web4.zip
