@@ -13,8 +13,5 @@ jobs:
       - uses: actions/checkout@v4
       - run: zip -r web4.zip .
       - uses: softprops/action-gh-release@v1
-  with:
-    files: web4.zip
-  env:
-    GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-
+        with:
+          files: web4.zip
