@@ -46,13 +46,19 @@ app.get('/api/tree', (req, res) => {
 
 // --- API: получить файл ---
 app.get('/api/file', (req, res) => {
-
+    const filePath = path.resolve(ROOT_DIR, req.query.path || '');
+    if (!filePath.startsWith(ROOT_DIR)) {
+        return res.status(400).send('Invalid path');
+    }
     res.send(fs.readFileSync(filePath, 'utf-8'));
 });
 
 // --- API: сохранить файл ---
 app.post('/api/file', (req, res) => {
-
+    const filePath = path.resolve(ROOT_DIR, req.body.path || '');
+    if (!filePath.startsWith(ROOT_DIR)) {
+        return res.status(400).send('Invalid path');
+    }
     fs.writeFileSync(filePath, req.body.content);
     res.send('OK');
 });
