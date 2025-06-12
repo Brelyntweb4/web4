@@ -10,9 +10,15 @@ wss.on('connection', ws => {
         if (msg.type === "join") {
             peers.push({ ws, name: msg.name });
             broadcast({ type: "peers", peers: peers.map(p => p.name) });
+            // информируем остальных о новом участнике
+            broadcast({ type: "handshake", name: msg.name }, ws);
         }
         if (msg.type === "tx") {
             broadcast({ type: "tx", tx: msg.tx }, ws);
+        }
+        if (msg.type === "handshake") {
+            // пересылаем рукопожатие другим участникам
+            broadcast({ type: "handshake", name: msg.name }, ws);
         }
     });
     ws.on('close', () => {
