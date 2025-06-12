@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: zip -r web4.zip .
+      - run: git archive --format=zip -o web4.zip HEAD
       - uses: softprops/action-gh-release@v1
         with:
           files: web4.zip
