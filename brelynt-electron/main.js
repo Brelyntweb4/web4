@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain, Menu, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs-extra');
 
-const BRELYNT_PATH = 'D:/BrelyntApp/Brelynt';
+let BRELYNT_PATH = process.env.BRELYNT_PATH;
 
 function createWindow () {
   Menu.setApplicationMenu(null);
@@ -19,13 +19,22 @@ function createWindow () {
   win.loadFile('public/index.html');
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  if (!BRELYNT_PATH) {
+    BRELYNT_PATH = path.join(app.getPath('userData'), 'Brelynt');
+  }
+  createWindow();
+});
 
 ipcMain.handle('get-brelynt-structure', async () => {
   try {
     if (!fs.existsSync(BRELYNT_PATH)) {
       console.log('[DEBUG] Папка не найдена:', BRELYNT_PATH);
-      dialog.showErrorBox('Ошибка', `Папка не найдена: ${BRELYNT_PATH}`);
+      dialog.showErrorBox(
+        'Ошибка',
+        `Папка не найдена: ${BRELYNT_PATH}. ` +
+        'Укажите путь через переменную BRELYNT_PATH или переместите данные в папку приложения.'
+      );
       return [];
     }
     function readDirRecursive(dir) {
