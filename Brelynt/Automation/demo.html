@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang='ru'>
+<head>
+  <meta charset='UTF-8'>
+  <title>Automation Demo</title>
+  <link rel='stylesheet' href='../style.css'>
+</head>
+<body>
+  <div class='block'>
+    <h1>Автоматизация задач</h1>
+    <textarea id='cmd' placeholder='Введите команду: “Резервировать backup каждый день”'></textarea>
+    <button onclick='runAuto()'>Применить</button>
+    <pre id='result'></pre>
+  </div>
+  <script>
+    function runAuto() {
+      let cmd = document.getElementById('cmd').value.trim();
+      if(/backup/i.test(cmd) && /день/i.test(cmd))
+        document.getElementById('result').innerText = "Резервное копирование настроено по расписанию (Demo)";
+      else
+        document.getElementById('result').innerText = "Команда не распознана";
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang='ru'>
+<head>
+  <meta charset='UTF-8'>
+  <title>Brelynt Wallet</title>
+  <link rel='stylesheet' href='../style.css'>
+</head>
+<body>
+  <div class='block'>
+    <h1>Кошелёк BRY</h1>
+    <div><b>Текущий баланс:</b> <span id='balance'>120 BRY</span></div>
+    <h2>Перевести токены</h2>
+    <input id='to' placeholder='Кому (user2)'/>
+    <input id='amount' placeholder='Сколько (число)' type='number'/>
+    <button onclick='transfer()'>Перевести</button>
+    <div id='tr_result'></div>
+    <h2>Ручная валидация (калькулятор)</h2>
+    <input id='txid' placeholder='TXID транзакции'/>
+    <input id='keyxl' placeholder='Универсальный ключ'/>
+    <button onclick='validate()'>Проверить</button>
+    <div id='val_result'></div>
+    <h2>История</h2>
+    <ul id='history'></ul>
+    <p><a href='faq.html'>Вопросы-Ответы (FAQ)</a></p>
+  </div>
+  <script src='calc.js'></script>
+  <script>
+    // История операций (пример)
+    const hist = [
+      '2025-05-25: Получено 50 BRY от user1 (TXID: 000123)',
+      '2025-05-24: Переведено 12 BRY user2 (TXID: 000112)',
+      '2025-05-24: Пополнено 80 BRY (гуманитарный майнинг)'
+    ];
+    document.getElementById('history').innerHTML = hist.map(x=>'<li>'+x+'</li>').join('');
+    function transfer() {
+      let to = document.getElementById('to').value.trim();
+      let amount = +document.getElementById('amount').value;
+      if(!to || !amount) { document.getElementById('tr_result').innerText='Укажите адрес и сумму'; return; }
+      document.getElementById('tr_result').innerText='Переведено '+amount+' BRY на '+to+' (DEMO)';
+    }
+    function validate() {
+      let txid = document.getElementById('txid').value.trim();
+      let keyxl = document.getElementById('keyxl').value.trim();
+      document.getElementById('val_result').innerText = checkTX(txid, keyxl);
+    }
+  </script>
+</body>
+</html>

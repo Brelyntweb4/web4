@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>BrelyntOS</title>
+  <meta name="viewport" content="width=900, initial-scale=1">
+  <style>
+    html, body {
+      background: #191919;
+      color: #eee;
+      margin: 0;
+      font-family: 'Inter', 'Segoe UI', 'Arial', 'monospace', sans-serif;
+      font-size: 18px;
+      min-height: 100vh;
+      transition: background .25s, color .25s;
+    }
+    .menu-grid {
+      max-width: 600px;
+      margin: 40px auto 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+    }
+    .menu-item {
+      background: #222;
+      border-radius: 24px;
+      box-shadow: 0 2px 12px #0006;
+      padding: 36px 16px 30px 16px;
+      text-align: left;
+      cursor: pointer;
+      min-height: 110px;
+      display: flex;
+      flex-direction: column;
+      transition: background .15s, box-shadow .15s;
+    }
+    .menu-item:hover { background: #282828; box-shadow: 0 3px 24px #0009; }
+    .menu-title { font-size: 1.25em; font-weight: 600; margin-bottom: 10px; }
+    .menu-desc { color: #aaa; font-size: 0.97em; font-weight: 400; }
+    .toolbar { max-width: 600px; margin: 16px auto 0 auto; display: flex; justify-content: flex-end; gap: 18px;}
+    .toolbar button { background: #232323; color: #eee; border: none; border-radius: 12px; padding: 8px 20px; cursor: pointer; font-size: 1em; }
+    .toolbar button:hover { background: #393939;}
+    .breadcrumbs { margin: 28px auto 0 auto; max-width: 600px; color: #999; font-size: 0.93em;}
+    .breadcrumbs span { cursor: pointer; text-decoration: underline; }
+    .section { background: #212121; border-radius: 20px; max-width: 670px; margin: 26px auto 0 auto; padding: 38px 32px 48px 32px; min-height: 330px; color: #f0f0f0;}
+    .back-btn { display: block; margin: 22px auto 0 auto; background: #232323; color: #ddd; border: none; border-radius: 9px; padding: 7px 38px; font-size: 1em; cursor: pointer;}
+    .back-btn:hover { background: #393939;}
+    .settings-modal, .lang-modal { display: none; position: fixed; top:0; left:0; width:100vw; height:100vh; background:#000a; z-index:20; align-items:center; justify-content:center;}
+    .modal-content { background: #232323; border-radius: 18px; padding: 38px 44px; max-width: 420px; color: #f0f0f0;}
+    .modal-content label { display: block; margin-bottom: 12px; font-size: 1.08em;}
+    .theme-toggle, .lang-toggle { margin-bottom: 22px;}
+    .close-modal { margin-top: 24px; background: #393939; color: #eee; border: none; border-radius: 8px; padding: 8px 28px; font-size: 1em; cursor: pointer;}
+    .close-modal:hover { background: #555;}
+    .mono { font-family: 'Consolas', 'Courier New', monospace; font-size: 1.08em; color: #c0ffe4;}
+    @media (max-width: 600px) {
+      .menu-grid { grid-template-columns: 1fr; gap: 13px; }
+      .section { padding: 20px 8px 34px 8px;}
+      .toolbar { max-width: 97vw;}
+      .breadcrumbs, .section { max-width: 97vw;}
+    }
+    body.white { background: #fff; color: #111; }
+    body.white .menu-item { background: #eaeaea; color: #1a1a1a; }
+    body.white .menu-title { color: #000; }
+    body.white .menu-desc { color: #656565; }
+    body.white .section { background: #f7f7f7; color: #1a1a1a;}
+    body.white .back-btn { background: #eee; color: #262626; }
+    body.white .back-btn:hover { background: #ddd; }
+    body.white .toolbar button, body.white .close-modal { background: #f3f3f3; color: #222;}
+    body.white .toolbar button:hover, body.white .close-modal:hover { background: #ddd;}
+    body.white .settings-modal, body.white .lang-modal { background: #fff9; }
+    body.gray { background: #d5d5d5; color: #232323;}
+    body.gray .menu-item { background: #ededed; color: #232323; }
+    body.gray .menu-title { color: #222; }
+    body.gray .menu-desc { color: #333; }
+    body.gray .section { background: #f2f2f2; color: #252525;}
+    body.gray .back-btn { background: #e3e3e3; color: #262626; }
+    body.gray .back-btn:hover { background: #dadada; }
+    body.gray .toolbar button, body.gray .close-modal { background: #ededed; color: #232323;}
+    body.gray .toolbar button:hover, body.gray .close-modal:hover { background: #dadada;}
+    body.gray .settings-modal, body.gray .lang-modal { background: #eaeaeaeb; }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button onclick="openSettings()">⚙️ Настройки</button>
+    <button onclick="openLang()">🌐 Язык</button>
+    <button onclick="toggleTheme()">🌗 Тема</button>
+  </div>
+  <div class="menu-grid" id="mainMenu"></div>
+  <div class="breadcrumbs" id="breadcrumbs"></div>
+  <div class="section" id="section" style="display:none;"></div>
+  <div class="settings-modal" id="settingsModal">
+    <div class="modal-content">
+      <label>Переключить тему:
+        <select id="themeSel">
+          <option value="dark">Тёмная</option>
+          <option value="white">Белая</option>
+          <option value="gray">Серая</option>
+        </select>
+      </label>
+      <label>Язык интерфейса:
+        <select id="langSel">
+          <option value="ru">Русский</option>
+          <option value="en">English</option>
+        </select>
+      </label>
+      <button class="close-modal" onclick="closeSettings()">Закрыть</button>
+    </div>
+  </div>
+  <div class="lang-modal" id="langModal">
+    <div class="modal-content">
+      <div style="margin-bottom:18px;">Выберите язык:</div>
+      <button class="close-modal" onclick="setLang('ru')">Русский</button>
+      <button class="close-modal" onclick="setLang('en')">English</button>
+      <button class="close-modal" onclick="closeLang()">Отмена</button>
+    </div>
+  </div>
+  <script>
+    // --- Данные всех разделов ---
+    const sections = {
+      wallet: {
+        title: "Кошелёк",
+        desc: "Покупка токенов, баланс, переводы, история",
+        content: `
+          <b>Brelynt Wallet</b> — управление токенами.<br><br>
+          <b>Покупка токенов</b>
+          <div class="section" style="background:#20262d; border-radius:14px; padding:22px 18px; margin-top:18px;">
+            <form id="buyForm" onsubmit="return buyTokens(event)">
+              <label>Сколько токенов купить:<br>
+                <input id="buy-amount" type="number" min="1" max="100000" value="100" style="margin-top:6px; width:110px; font-size:1.08em;">
+              </label>
+              <br><br>
+              <label>Способ оплаты:<br>
+                <select id="buy-method" style="margin-top:6px; font-size:1.08em;">
+                  <option value="btc">Bitcoin</option>
+                  <option value="cash">Наличные</option>
+                  <option value="card">Банковская карта</option>
+                  <option value="sbp">СБП (Система быстрых платежей)</option>
+                </select>
+              </label>
+              <br><br>
+              <button type="submit" style="padding:10px 24px; border-radius:8px; background:#3180f5; color:#fff; font-size:1.12em; border:none; cursor:pointer;">Купить</button>
+            </form>
+            <div id="buyResult" style="margin-top:18px; color:#76e5c6; font-size:1.08em;"></div>
+          </div>
+          <div style="margin-top:30px;">
+            <b>Пример баланса:</b> <span class="mono" id="bry-balance">0</span> BRY
+            <br><b>История операций:</b>
+            <ul id="txList" style="color:#aef;">
+              <li>2025-05-27: +100 BRY (покупка через Bitcoin)</li>
+              <li>2025-05-25: +250 BRY (наличные, точка приёма №7)</li>
+            </ul>
+          </div>
+          <script>
+            function buyTokens(e) {
+              e.preventDefault();
+              var amount = document.getElementById('buy-amount').value;
+              var method = document.getElementById('buy-method').value;
+              var methodText = {
+                btc: 'Bitcoin',
+                cash: 'Наличные',
+                card: 'Банковская карта',
+                sbp: 'СБП'
+              }[method] || method;
+              var result = '';
+              if (!amount || amount < 1) {
+                result = 'Введите корректное количество токенов.';
+              } else {
+                if (method === 'btc') {
+                  result = 'Для покупки за Bitcoin переведите сумму по адресу: <br><span class="mono">bc1q......</span><br>После подтверждения поступления — токены будут зачислены.';
+                }
+                if (method === 'cash') {
+                  result = 'Для покупки за наличные обратитесь к точке приёма или представителю Brelynt. Получите QR-код для оплаты и подтверждения.';
+                }
+                if (method === 'card') {
+                  result = 'Для покупки по карте используйте официальный сайт или терминал. После оплаты получите квитанцию и ожидайте зачисления.';
+                }
+                if (method === 'sbp') {
+                  result = 'Для оплаты через СБП (Система быстрых платежей) отсканируйте QR-код или воспользуйтесь приложением банка.';
+                }
+                result = 'Запрос на покупку ' + amount + ' токенов выбран способом: <b>' + methodText + '</b>.<br>' + result;
+              }
+              document.getElementById('buyResult').innerHTML = result;
+              // В будущем: отправка запроса на сервер, логика оплаты, обновление баланса и истории
+              return false;
+            }
+            // Можно тут подгружать и отображать баланс, историю — пример
+            document.getElementById('bry-balance').textContent = localStorage.getItem('bry-balance') || '0';
+          <\/script>
+        `
+      },
+      ig: {
+        title: "IG — Идеограф",
+        desc: "Автоматизация, конвертер сценариев, редактор мини-программ",
+        content: "<b>Brelynt IG</b> — модуль универсального редактора и автоматизации."
+      },
+      cloud: {
+        title: "P2P Cloud",
+        desc: "Backup, восстановление, синхронизация",
+        content: "<b>Brelynt P2P Cloud</b> — резервное копирование и восстановление без серверов."
+      },
+      sovb: {
+        title: "SOVB — Миниблокчейн",
+        desc: "Миниблокчейн, ручная сверка, p2p, контрольные точки",
+        content: "<b>SOVB</b> (Smart Object Verified Block) — миниблокчейн с локальными блоками."
+      },
+      coreheart: {
+        title: "Core & Heart of Brelynt",
+        desc: "Шифрование, калькулятор, защита, backup, SMF‑Crypto",
+        content: "<b>Core & Heart of Brelynt</b> — криптология, шифрование, валидация, backup."
+      },
+      automation: {
+        title: "Автоматизация",
+        desc: "Цепочки действий, задачи, сценарии",
+        content: "<b>Модуль автоматизации:</b> Создание и настройка цепочек действий."
+      },
+      faq: {
+        title: "FAQ",
+        desc: "Вопросы и ответы по работе Brelynt",
+        content: "<b>Часто задаваемые вопросы:</b>"
+      },
+      instructions: {
+        title: "Руководство пользователя",
+        desc: "Пошаговые инструкции для новичков",
+        content: "<b>Пошаговое руководство:</b>"
+      },
+      whitepaper: {
+        title: "WhitePaper",
+        desc: "Техническое описание, токеномика, безопасность",
+        content: "<b>White Paper Brelynt</b>"
+      },
+      dao: {
+        title: "DAO",
+        desc: "Децентрализованное управление (опционально)",
+        content: "<b>DAO Brelynt</b> — децентрализованный модуль управления."
+      },
+      nft: {
+        title: "NFT",
+        desc: "NFT-модуль (по запросу)",
+        content: "<b>NFT Brelynt</b> — управление невзаимозаменяемыми токенами (NFT)"
+      },
+      games: {
+        title: "Игры",
+        desc: "Мини-игры и игровые сценарии",
+        content: "<b>Мини-игры и игровые сценарии</b> Brelynt."
+      },
+      media: {
+        title: "Медиа",
+        desc: "Изображения, аудио, видео",
+        content: "<b>Раздел медиа</b> — хранение и обработка изображений, аудио, видеофайлов."
+      },
+      documents: {
+        title: "Документы",
+        desc: "Рабочие, тестовые, примерные документы",
+        content: "<b>Раздел документов</b> — хранение любых файлов, создание папок, вложенность не ограничена."
+      },
+      mission: {
+        title: "Миссия",
+        desc: "Философия и задачи Brelynt",
+        content: "<b>Миссия Brelynt</b>: создать честную, прозрачную, автономную платформу для новых поколений пользователей."
+      }
+    };
+
+    // --- Генерация меню ---
+    function renderMenu() {
+      document.getElementById('section').style.display = 'none';
+      document.getElementById('mainMenu').innerHTML = '';
+      document.getElementById('breadcrumbs').innerHTML = '';
+      for (const k of Object.keys(sections)) {
+        const item = document.createElement('div');
+        item.className = 'menu-item';
+        item.onclick = () => goSection(k);
+        item.innerHTML = '<span class="menu-title">' + sections[k].title + '</span>' +
+                         '<span class="menu-desc">' + sections[k].desc + '</span>';
+        document.getElementById('mainMenu').appendChild(item);
+      }
+    }
+
+    // --- Переход в раздел ---
+    function goSection(key) {
+      window._sectionKey = key;
+      renderSection(key);
+    }
+
+    // --- Рендер раздела с хлебными крошками и кнопкой назад ---
+    function renderSection(key) {
+      document.getElementById('mainMenu').innerHTML = '';
+      const section = sections[key];
+      document.getElementById('section').style.display = 'block';
+      document.getElementById('section').innerHTML = section.content +
+        "<button class='back-btn' onclick='renderMenu()'>Назад</button>";
+      document.getElementById('breadcrumbs').innerHTML =
+        '<span onclick="renderMenu()">Главное меню</span> / <b>' + section.title + '</b>';
+    }
+
+    // --- Темы ---
+    function toggleTheme() {
+      const next = {dark: "white", white: "gray", gray: "dark"};
+      const cur = document.body.className || "dark";
+      document.body.className = next[cur] || "dark";
+    }
+    document.getElementById('themeSel').onchange = function() {
+      document.body.className = this.value;
+    };
+
+    // --- Модалки настроек и языка ---
+    function openSettings() { document.getElementById('settingsModal').style.display = 'flex'; }
+    function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
+    function openLang() { document.getElementById('langModal').style.display = 'flex'; }
+    function closeLang() { document.getElementById('langModal').style.display = 'none'; }
+    function setLang(lang) { closeLang(); alert('Мультиязычность будет добавлена на следующем этапе.'); }
+
+    // --- Инициализация ---
+    renderMenu();
+  </script>
+</body>
+</html>
+

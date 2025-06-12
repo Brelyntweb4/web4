@@ -1,0 +1,17 @@
+{
+  "name": "brelynt-electron",
+  "version": "1.0.0",
+  "description": "Brelynt Electron App",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "electron": "^30.0.0",
+    "express": "^5.1.0",
+    "fs-extra": "^11.2.0",
+    "path": "^0.12.7",
+    "ws": "^8.18.2"
+  }
+}

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>BrelyntOS — Кошелёк</title>
+  <style>
+    body { background: #181818; color: #ededed; font-family: 'Segoe UI', Arial, sans-serif; margin: 0;}
+    .toolbar { display: flex; justify-content: flex-end; gap: 12px; padding: 16px 26px 0 0;}
+    .toolbar-btn {
+      background: #232323; color: #ededed; border: none; font-size: 1em;
+      font-weight: 500; padding: 7px 21px; border-radius: 8px; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .toolbar-btn:hover { background: #202020; }
+    .breadcrumbs { max-width:660px; margin: 0 auto; color: #999; font-size: 0.97em; margin-top: 10px;}
+    .breadcrumbs span { cursor:pointer; text-decoration: underline;}
+    .breadcrumbs b { color: #ededed;}
+    .content { max-width:600px; margin:28px auto 0 auto; background:#1b1b1b; border-radius:17px; padding:38px 32px 38px 32px;}
+    h1 { margin-top:0; font-size:2.1em; font-weight:900; letter-spacing:0.03em; text-align:left;}
+    .desc { color:#bbb; font-size:1.09em; margin-bottom:30px; }
+    .pay-list { display:flex; gap:22px; flex-wrap:wrap; margin-bottom:28px;}
+    .pay-btn {
+      flex: 1 1 120px;
+      background: #232323; border:none; border-radius:11px;
+      color: #ededed; padding:18px 0; margin-bottom:14px;
+      font-size:1.12em; font-weight:700; letter-spacing:0.04em;
+      cursor:pointer; transition:background .13s; min-width:100px;
+    }
+    .pay-btn.selected, .pay-btn:focus { background: #353535; }
+    .pay-requisites { background:#222; border-radius:7px; padding:16px; margin-bottom:16px;}
+    .copy-btn { background:#2b2b2b; color:#ededed; border:none; border-radius:7px; padding:7px 24px; cursor:pointer; margin-left:14px;}
+    .copy-btn:hover { background:#393939;}
+    .admin-panel { background:#222; padding:14px 18px; border-radius:8px; margin:0 0 22px 0;}
+    .admin-panel label { font-weight:500; margin-top:8px; display:block;}
+    .admin-panel input, .admin-panel textarea { width:98%; background:#191919; color:#ededed; border:1px solid #555; border-radius:6px; padding:8px; margin:6px 0 12px 0;}
+    .admin-panel .pay-method-admin { display:flex; align-items:center; gap:13px; margin-bottom:10px;}
+    .admin-panel .del-btn { background:none; color:#c77; border:none; font-size:1.15em; cursor:pointer;}
+    .admin-panel .del-btn:hover { color:#ff4444; }
+    .admin-panel .drag-btn { background:none; border:none; cursor:grab; color:#ededed; font-size:1.12em;}
+    .admin-panel .drag-btn:active { color:#ffe13a;}
+    .admin-panel .add-btn { background:#232323; color:#ededed; border:none; border-radius:7px; padding:6px 22px; font-size:1em; cursor:pointer;}
+    .admin-panel .add-btn:hover { background:#353535;}
+    @media (max-width:700px){
+      .content {padding:12px 4vw 18px 4vw;}
+      .pay-list {gap:7px;}
+      .pay-btn {min-width:76px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button class="toolbar-btn" onclick="toggleTheme()">Тема</button>
+    <button class="toolbar-btn" onclick="toggleLang()">Язык</button>
+    <button class="toolbar-btn" onclick="openSettings()">Настройки</button>
+  </div>
+  <div class="breadcrumbs" id="breadcrumbs">
+    <span onclick="goHome()">Главная</span> / <b>Кошелёк</b> / <span id="crumbSection">Покупка токена</span>
+  </div>
+  <div class="content" id="mainContent"></div>
+
+  <script>
+    // --- СТИЛЬ ---
+    let theme = localStorage.getItem('theme') || 'dark';
+    document.body.style.background = theme === 'dark' ? '#181818' : '#ededed';
+    document.body.style.color = theme === 'dark' ? '#ededed' : '#181818';
+
+    function toggleTheme() {
+      theme = (theme === 'dark') ? 'light' : 'dark';
+      localStorage.setItem('theme', theme);
+      document.body.style.background = theme === 'dark' ? '#181818' : '#ededed';
+      document.body.style.color = theme === 'dark' ? '#ededed' : '#181818';
+    }
+    function toggleLang() { alert('Скоро будет!'); }
+    function openSettings() { alert('Скоро будет!'); }
+    function goHome() { alert('Главная панель (реализуйте переход к index.html если надо)'); }
+
+    // --- ДАННЫЕ ---
+    let adminMode = false;
+    let walletTitle = localStorage.getItem('walletTitle') || 'Кошелёк';
+    let walletDesc = localStorage.getItem('walletDesc') || 'Управление токенами, баланс, переводы, история, калькулятор';
+    let payMethods = JSON.parse(localStorage.getItem('payMethods') || 'null') || [
+      { key:'btc', label:'BTC', enabled:true, requisite:'bc1qtestaddress123...', link:'', comment:'' },
+      { key:'eth', label:'Эфир', enabled:true, requisite:'0xTESTADDRESS...', link:'', comment:'Адрес Ethereum для перевода' },
+      { key:'paypal', label:'PayPal', enabled:true, requisite:'pay@wallet.com', link:'https://paypal.me/test', comment:'Оплата через PayPal' },
+      { key:'card', label:'Карта', enabled:true, requisite:'1234 5678 9876 5432', link:'', comment:'Банковская карта' },
+      { key:'qr', label:'QR', enabled:true, requisite:'qr-link-here', link:'', comment:'Сканируйте QR код' }
+    ];
+    let selectedPay = payMethods.find(x=>x.enabled) ? payMethods.find(x=>x.enabled).key : '';
+
+    // --- КНОПКА "АДМИН" ---
+    function renderWallet() {
+      let html = `<h1>${walletTitle}</h1>
+      <div class="desc">${walletDesc}</div>`;
+      if (adminMode) {
+        html += `<div class="admin-panel" id="adminPanel">
+          <label>Название раздела:<br><input id="editTitle" value="${walletTitle}"></label>
+          <label>Описание:<br><textarea id="editDesc">${walletDesc}</textarea></label>
+          <div><b>Способы оплаты:</b></div>
+          <div id="adminPayList">` +
+            payMethods.map((p,i)=>`
+              <div class="pay-method-admin" draggable="true" ondragstart="dragStart(event,${i})" ondragover="dragOver(event,${i})">
+                <button class="drag-btn" title="Перетащить">&#9776;</button>
+                <input style="width:60px;" value="${p.label}" onchange="editPayLabel(${i},this.value)">
+                <input style="width:36%" value="${p.requisite}" onchange="editPayReq(${i},this.value)">
+                <label><input type="checkbox" ${p.enabled?'checked':''} onchange="togglePayEnable(${i})">Вкл</label>
+                <button class="del-btn" onclick="delPay(${i})">&#128465;</button>
+              </div>`).join('') +
+          `</div>
+          <button class="add-btn" onclick="addPay()">+ Добавить способ оплаты</button>
+          <div style="text-align:right; margin-top:13px;">
+            <button class="add-btn" onclick="saveAdmin()">Сохранить</button>
+            <button class="add-btn" onclick="toggleAdmin()">Выйти из Админа</button>
+          </div>
+        </div>`;
+      }
+      html += `<div class="pay-list">` +
+        payMethods.filter(p=>p.enabled).map(p=>`
+          <button class="pay-btn${selectedPay===p.key?' selected':''}" onclick="choosePay('${p.key}')">${p.label}</button>
+        `).join('') + `</div>`;
+      let curPay = payMethods.find(p=>p.key===selectedPay && p.enabled);
+      if (curPay) {
+        html += `<div class="pay-requisites">
+          <b>${curPay.label}:</b><br>
+          <span class="mono" id="payReq">${curPay.requisite}</span>
+          <button class="copy-btn" onclick="copyReq()">Скопировать реквизиты</button>
+          ${curPay.link ? `<div><a href="${curPay.link}" target="_blank" style="color:#6de;">Перейти к оплате</a></div>` : ''}
+          ${curPay.comment ? `<div style="color:#bbb; margin-top:5px;">${curPay.comment}</div>` : ''}
+        </div>`;
+      }
+      if (!adminMode) html += `<div style="text-align:right"><button class="add-btn" onclick="toggleAdmin()">Войти как Админ</button></div>`;
+      document.getElementById('mainContent').innerHTML = html;
+    }
+
+    // --- АДМИН ФУНКЦИИ ---
+    function toggleAdmin() {
+      adminMode = !adminMode;
+      renderWallet();
+    }
+    function editPayLabel(i,val){ payMethods[i].label=val; }
+    function editPayReq(i,val){ payMethods[i].requisite=val; }
+    function togglePayEnable(i){ payMethods[i].enabled=!payMethods[i].enabled; renderWallet();}
+    function delPay(i){ payMethods.splice(i,1); renderWallet();}
+    function addPay(){ payMethods.push({key:'custom'+Date.now(),label:'Новый',enabled:true,requisite:'',link:'',comment:''}); renderWallet();}
+    function saveAdmin(){
+      walletTitle = document.getElementById('editTitle').value.trim();
+      walletDesc = document.getElementById('editDesc').value.trim();
+      localStorage.setItem('walletTitle', walletTitle);
+      localStorage.setItem('walletDesc', walletDesc);
+      localStorage.setItem('payMethods', JSON.stringify(payMethods));
+      adminMode = false;
+      renderWallet();
+    }
+    // drag-n-drop — сортировка
+    let dragIndex=null;
+    function dragStart(e,i){ dragIndex=i; }
+    function dragOver(e,i){
+      e.preventDefault();
+      if (dragIndex===null || dragIndex===i) return;
+      let temp = payMethods[dragIndex];
+      payMethods.splice(dragIndex,1);
+      payMethods.splice(i,0,temp);
+      dragIndex=null;
+      renderWallet();
+    }
+
+    // --- ДЛЯ ПОЛЬЗОВАТЕЛЯ ---
+    function choosePay(k){ selectedPay=k; renderWallet(); }
+    function copyReq(){
+      let el = document.getElementById('payReq');
+      let val = el.textContent;
+      navigator.clipboard.writeText(val);
+      el.style.background="#444";
+      setTimeout(()=>el.style.background="", 400);
+    }
+
+    // ---- Запуск ----
+    renderWallet();
+  </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang='ru'>
+<head>
+  <meta charset='UTF-8'>
+  <title>IG — Конвертер сценариев</title>
+  <link rel='stylesheet' href='../style.css'>
+</head>
+<body>
+  <div class='block'>
+    <h1>IG — Конвертер</h1>
+    <textarea id='src' rows='4' placeholder='Введите сценарий или команду (например, “Начать майнинг BRY”)'></textarea>
+    <button onclick='conv()'>Конвертировать</button>
+    <pre id='out'></pre>
+  </div>
+  <script>
+    function conv() {
+      let src = document.getElementById('src').value.trim();
+      // demo: простая конвертация “майнинг” в JSON-команду
+      if(/майнинг/i.test(src))
+        document.getElementById('out').innerText = JSON.stringify({command:'start_mining',token:'BRY'},null,2);
+      else
+        document.getElementById('out').innerText = "Нет известной команды";
+    }
+  </script>
+</body>
+</html>

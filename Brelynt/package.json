@@ -1,0 +1,14 @@
+{
+  "name": "brelynt",
+  "version": "1.0.0",
+  "description": "BrelyntOS — P2P-кошелёк и экосистема",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.2.3"
+  }
+}

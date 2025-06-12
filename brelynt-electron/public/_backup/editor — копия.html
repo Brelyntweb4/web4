@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>BL Hub — Редактор файлов</title>
+  <style>
+    body { background: #181c22; color: #e6e7e9; font-family: Arial, sans-serif; margin: 0; }
+    #container { display: flex; height: 100vh; }
+    #sidebar { width: 260px; background: #232730; border-right: 1px solid #25282e; padding: 0; overflow-y: auto; }
+    #fileList { list-style: none; margin: 0; padding: 0; }
+    #fileList li { padding: 12px 20px; cursor: pointer; border-bottom: 1px solid #232730; }
+    #fileList li:hover, #fileList li.active { background: #303642; color: #61d9fa; }
+    #main { flex: 1; display: flex; flex-direction: column; }
+    #fileName { background: #232730; padding: 14px; font-weight: bold; border-bottom: 1px solid #25282e; }
+    #editor { flex: 1; background: #22282f; color: #fff; width: 100%; border: none; resize: none; font-family: 'Fira Mono', monospace; font-size: 16px; padding: 18px; }
+    #actions { background: #232730; padding: 14px; border-top: 1px solid #25282e; display: flex; gap: 10px; }
+    button { background: #181c22; color: #61d9fa; border: 1px solid #25282e; border-radius: 6px; padding: 8px 18px; cursor: pointer; transition: 0.2s; font-size: 16px; }
+    button:hover { background: #61d9fa; color: #181c22; }
+    #backupList { margin-left: 14px; font-size: 13px; }
+    #backupList select { background: #232730; color: #e6e7e9; border: 1px solid #25282e; }
+  </style>
+</head>
+<body>
+<div id="container">
+  <div id="sidebar">
+    <ul id="fileList"></ul>
+  </div>
+  <div id="main">
+    <div id="fileName">Файл не выбран</div>
+    <textarea id="editor" disabled></textarea>
+    <div id="actions">
+      <button id="saveBtn" disabled>Сохранить</button>
+      <span id="backupList"></span>
+    </div>
+  </div>
+</div>
+<script>
+const api = "http://localhost:3040"; // Порт API — не меняйте, если filehub.js запущен
+
+const fileListEl = document.getElementById('fileList');
+const fileNameEl = document.getElementById('fileName');
+const editorEl = document.getElementById('editor');
+const saveBtn = document.getElementById('saveBtn');
+const backupListEl = document.getElementById('backupList');
+
+let currentFile = null;
+
+function listFiles() {
+  fetch(api + '/list')
+    .then(r => r.json())
+    .then(files => {
+      fileListEl.innerHTML = '';
+      files.filter(f => f.type === 'file').forEach(f => {
+        let li = document.createElement('li');
+        li.textContent = f.name;
+        li.onclick = () => openFile(f.name);
+        fileListEl.appendChild(li);
+      });
+    });
+}
+
+function openFile(filename) {
+  fetch(api + '/file?filename=' + encodeURIComponent(filename))
+    .then(r => r.text())
+    .then(text => {
+      editorEl.value = text;
+      editorEl.disabled = false;
+      saveBtn.disabled = false;
+      currentFile = filename;
+      fileNameEl.textContent = filename;
+      Array.from(fileListEl.children).forEach(li => {
+        li.classList.toggle('active', li.textContent === filename);
+      });
+      loadBackups(filename);
+    });
+}
+
+function saveFile() {
+  if (!currentFile) return;
+  fetch(api + '/file', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ filename: currentFile, content: editorEl.value })
+  }).then(() => {
+    loadBackups(currentFile);
+    alert('Файл сохранён');
+  });
+}
+
+function loadBackups(filename) {
+  fetch(api + '/list-backups?filename=' + encodeURIComponent(filename))
+    .then(r => r.json())
+    .then(backups => {
+      if (!Array.isArray(backups) || !backups.length) {
+        backupListEl.innerHTML = '';
+        return;
+      }
+      backupListEl.innerHTML = 'Восстановить: ';
+      let sel = document.createElement('select');
+      backups.forEach(bak => {
+        let opt = document.createElement('option');
+        opt.value = bak;
+        opt.textContent = bak.replace(/^.*_/, '');
+        sel.appendChild(opt);
+      });
+      let restoreBtn = document.createElement('button');
+      restoreBtn.textContent = 'Восстановить';
+      restoreBtn.onclick = () => restoreBackup(filename, sel.value);
+      backupListEl.appendChild(sel);
+      backupListEl.appendChild(restoreBtn);
+    });
+}
+
+function restoreBackup(filename, backup) {
+  fetch(api + '/restore-backup', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ filename, backup })
+  })
+  .then(() => {
+    openFile(filename);
+    alert('Восстановлено из резервной копии');
+  });
+}
+
+saveBtn.onclick = saveFile;
+
+listFiles();
+
+</script>
+</body>
+</html>
+

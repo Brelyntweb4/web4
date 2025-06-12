@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang='ru'>
+<head>
+  <meta charset='UTF-8'>
+  <title>SOVB — Smart Block Demo</title>
+  <link rel='stylesheet' href='../style.css'>
+</head>
+<body>
+  <div class='block'>
+    <h1>SOVB: Миниблокчейн DEMO</h1>
+    <input id='sdata' placeholder='Данные для блока'>
+    <input id='skey' placeholder='Ключ'>
+    <button onclick='createBlock()'>Создать миниблок</button>
+    <pre id='sresult'></pre>
+  </div>
+  <script src='smartblock.js'></script>
+  <script>
+    function createBlock() {
+      let data = document.getElementById('sdata').value;
+      let key = document.getElementById('skey').value;
+      let blk = genMiniBlock(data, key);
+      document.getElementById('sresult').innerText = JSON.stringify(blk,null,2);
+    }
+  </script>
+</body>
+</html>

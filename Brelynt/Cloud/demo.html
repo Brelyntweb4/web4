@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang='ru'>
+<head>
+  <meta charset='UTF-8'>
+  <title>Cloud Backup Demo</title>
+  <link rel='stylesheet' href='../style.css'>
+</head>
+<body>
+  <div class='block'>
+    <h1>Brelynt P2P Cloud — Backup Demo</h1>
+    <textarea id='data' placeholder='Ваши данные'></textarea>
+    <button onclick='backup()'>Сделать backup (demo)</button>
+    <button onclick='restore()'>Восстановить</button>
+    <div id='result'></div>
+  </div>
+  <script>
+    function backup() {
+      let d = document.getElementById('data').value;
+      localStorage.setItem('bry_backup',d);
+      document.getElementById('result').innerText='Backup сохранён локально';
+    }
+    function restore() {
+      let d = localStorage.getItem('bry_backup')||'';
+      document.getElementById('result').innerText='Backup: '+d;
+    }
+  </script>
+</body>
+</html>

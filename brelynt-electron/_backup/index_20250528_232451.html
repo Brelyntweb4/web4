@@ -1,0 +1,37 @@
+﻿<!DOCTYPE html>
+<html lang='ru'>
+<head>
+  <meta charset='UTF-8'>
+  <title>BrelyntOS</title>
+  <style>body { background: #191919; color: #f1f1f1; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; }</style>
+</head>
+<body>
+<div class=""main-menu"" id=""mainMenu"">
+  <div class=""wallet-module"">
+    <div class=""module-header"">
+      <span class=""module-title"">Покупка токена</span>
+      <button class=""module-settings"" style=""display:none"" onclick=""openSettings('buy')"">&#9881;</button>
+    </div>
+    <div class=""module-desc"">
+      Купите BRY токены за рубли, криптовалюту, PayPal и другие методы.
+    </div>
+    <form id=""buyForm"">
+      <label>Сумма (BRY):<br>
+        <input type=""number"" min=""1"" max=""10000"" value=""100"" style=""width:140px"">
+      </label>
+      <br>
+      <div class=""pay-methods"">
+        <button type=""button"" class=""pay-method active"">PayPal</button>
+        <button type=""button"" class=""pay-method"">Revolut</button>
+        <button type=""button"" class=""pay-method"">BTC/ETH/TON</button>
+        <button type=""button"" class=""pay-method"">Банковская карта</button>
+      </div>
+      <br>
+      <button type=""submit"" class=""main-action-btn"">Купить</button>
+    </form>
+  </div>
+</div>
+<script src=""buyToken.js""></script>
+<link rel=""stylesheet"" href=""buyToken.css"">
+</body>
+</html>

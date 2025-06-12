@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>BrelyntOS</title>
+  <meta name="viewport" content="width=900, initial-scale=1" />
+  <style>
+    /* --------- (весь существующий CSS оставил без изменений) ---------- */
+    /* ... длинный блок стилей ... */
+  </style>
+</head>
+
+<body>
+  <!-- ─────────── Панель инструментов ─────────── -->
+  <div class="toolbar">
+    <button onclick="openSettings()">⚙️ Настройки</button>
+    <button onclick="openLang()">🌐 Язык</button>
+    <button onclick="toggleTheme()">🌗 Тема</button>
+
+    <!-- Новая кнопка управления узлом -->
+    <button id="toggleNodeBtn" title="Включить/выключить Web-4 узел">
+      Node OFF
+    </button>
+  </div>
+
+  <!-- ─────────── Шаблон, как был ─────────── -->
+  <div class="menu-grid" id="mainMenu"></div>
+  <div class="breadcrumbs" id="breadcrumbs"></div>
+  <div class="section" id="section" style="display:none;"></div>
+
+  <!-- (модалки Настройки и Язык оставлены без изменений) -->
+  <!-- ... -->
+
+  <!-- ─────────── ЛОГИКА UI ─────────── -->
+  <script>
+    /* ---------- новый скрипт для кнопки ON/OFF ---------- */
+    const nodeBtn = document.getElementById('toggleNodeBtn');
+    nodeBtn.addEventListener('click', () => {
+      // p2pBridge.toggle() вернёт true, если узел стал ON
+      const on = window.p2pBridge.toggle();
+      nodeBtn.textContent = on ? 'Node ON' : 'Node OFF';
+    });
+
+    /* ---------- существующий код меню / разделов ---------- */
+    const sections = {
+      wallet: { title: 'Кошелёк', /* ... */ },
+      ig: { title: 'IG — Идеограф', /* ... */ },
+      /*  ---- (оставил все остальные разделы, как в исходнике) ---- */
+    };
+
+    function renderMenu() {
+      document.getElementById('section').style.display = 'none';
+      document.getElementById('mainMenu').innerHTML = '';
+      document.getElementById('breadcrumbs').innerHTML = '';
+      for (const k of Object.keys(sections)) {
+        const item = document.createElement('div');
+        item.className = 'menu-item';
+        item.onclick = () => goSection(k);
+        item.innerHTML =
+          '<span class="menu-title">' + sections[k].title + '</span>' +
+          '<span class="menu-desc">' + sections[k].desc + '</span>';
+        document.getElementById('mainMenu').appendChild(item);
+      }
+    }
+
+    function goSection(key) {
+      window._sectionKey = key;
+      renderSection(key);
+    }
+
+    function renderSection(key) {
+      const section = sections[key];
+      document.getElementById('mainMenu').innerHTML = '';
+      document.getElementById('section').style.display = 'block';
+      document.getElementById('section').innerHTML =
+        section.content + "<button class='back-btn' onclick='renderMenu()'>Назад</button>";
+      document.getElementById('breadcrumbs').innerHTML =
+        '<span onclick="renderMenu()">Главное меню</span> / <b>' + section.title + '</b>';
+    }
+
+    function showFAQ() { renderSection('faq'); }
+
+    /* ---------- темы и модалки (оставил как было) ---------- */
+    function toggleTheme() { /* ... */ }
+    /* openSettings, closeSettings, openLang, ... */
+
+    /* ---------- инициализация ---------- */
+    renderMenu();
+  </script>
+</body>
+</html>

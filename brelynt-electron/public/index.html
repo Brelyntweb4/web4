@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>BrelyntOS — Мини-прототип</title>
+  <style>
+    body {
+      background: #181818; color: #ededed;
+      font-family: 'Segoe UI', Arial, sans-serif; margin: 0;
+    }
+    h1 {
+      font-size: 2.45em; text-align: center; margin: 48px 0 30px 0;
+      font-weight: 900; letter-spacing: 1px; color: #ededed;
+    }
+    h2 { font-size: 1.32em; font-weight: 800; margin: 22px 0 12px 0; }
+    .toolbar {
+      position: absolute; top: 18px; right: 32px; display: flex; gap: 12px;
+    }
+    .toolbar-btn {
+      background: #222; color: #ededed; border: none;
+      font-size: 1.16em; font-weight: 500;
+      padding: 9px 22px; border-radius: 9px; cursor: pointer;
+      transition: background 0.15s;
+      display: flex; align-items: center; justify-content: center;
+      min-width: 44px; min-height: 44px;
+      outline: none;
+    }
+    .toolbar-btn:focus, .toolbar-btn:hover { background: #232323; }
+    .main-menu { display: flex; flex-direction: column; align-items: center; margin-top: 26px; gap: 24px;}
+    .section-btn {
+      width: 430px; background: #232323; border: none; border-radius: 16px;
+      color: #ededed; padding: 21px 34px 15px 34px; text-align: left; cursor: pointer;
+      box-sizing: border-box; margin: 0; transition: background 0.13s;
+      font-size: 1.18em; font-weight: 800; letter-spacing: 0.02em;
+      display: flex; flex-direction: column; align-items: flex-start;
+    }
+    .section-btn .section-desc { font-size: .91em; font-weight: 400; color: #b9b9b9; margin-top: 3px; }
+    .section-btn:hover, .section-btn:focus { background: #1b1b1b; }
+    .admin-panel {
+      background: #222; padding: 14px 24px 20px 18px; border-radius: 12px;
+      margin: 28px 0 0 0; color: #ededed; font-size: 1em; max-width: 540px;
+      box-shadow: 0 2px 14px #000a;
+    }
+    .admin-btn { background: none; border: none; color: #ededed; cursor: pointer; font-size: 1em; }
+    .admin-btn:focus, .admin-btn:hover { color: #fff; text-decoration: underline;}
+    .modal { display: none; position: fixed; top:0; left:0; width:100vw; height:100vh; background:#000b; align-items:center; justify-content:center; z-index:99;}
+    .modal.open { display: flex;}
+    .modal-content { background:#232323; padding:40px 34px 26px 34px; border-radius:18px; color:#ededed; max-width:460px;}
+    .modal-content textarea { width: 99%; min-height: 90px; background: #1b1b1b; color: #ededed; border: 1px solid #444; border-radius: 6px; padding: 8px; margin-top: 6px;}
+    .modal-content input { width: 99%; background: #1b1b1b; color: #ededed; border: 1px solid #444; border-radius: 6px; padding: 7px; margin-top: 6px; }
+    .modal-content .modal-actions { margin-top: 20px; display: flex; gap: 18px; justify-content: flex-end;}
+    .breadcrumbs { font-size: 0.68em; color: #bbb; margin: 0 0 11px 44px; padding: 0;}
+    .breadcrumbs span { color: #ededed; }
+    .breadcrumbs a { color: #bbb; text-decoration: none; }
+    .breadcrumbs a:hover { text-decoration: underline; color: #ededed;}
+    .pay-btns { display: flex; flex-direction: column; gap: 16px; margin: 25px 0 20px 0;}
+    .pay-btn {
+      background: #232323; color: #ededed; border: none; border-radius: 9px;
+      padding: 14px 0; font-size: 1.12em; font-weight:800;
+      cursor:pointer; width: 100%; text-align: center;
+      outline: none; transition: background 0.13s;
+    }
+    .pay-btn.selected, .pay-btn:focus { background: #ededed; color: #181818; }
+    .pay-btn:hover { background: #292929; color: #fff;}
+    .copy-btn { font-size: 0.96em; background: #232323; color: #ededed; border: none; cursor: pointer; margin-left: 7px; border-radius: 7px; padding: 4px 15px;}
+    .copy-btn:hover, .copy-btn:focus { background: #2c2c2c; color: #fff; }
+    .pay-data {
+      margin: 18px 0 10px 0; font-size: 1em; word-break: break-all;
+      background: #222; border-radius: 10px; padding: 19px 18px 12px 20px;
+      box-shadow: 0 2px 11px #0008;
+    }
+    .pay-note { color: #a7a7a7; font-size: .95em; margin-top: 2px;}
+    .edit-bar {margin-top: 18px;display:flex;gap:20px;}
+    .edit-bar button {background:none;color:#ededed;border:none;cursor:pointer;font-size:.96em;}
+    .edit-bar button:hover, .edit-bar button:focus {text-decoration: underline;}
+    .lang-panel { text-align: center; margin-top: 55px; color: #aaa; font-size: .93em;}
+    .lang-panel a {
+      display: inline-block; margin: 6px 7px; padding: 4px 14px;
+      border-radius: 8px; color: #ededed; text-decoration: none;
+      background: #292929; transition: background 0.13s;
+      font-weight: 600; font-size: .98em;
+    }
+    .lang-panel a:hover, .lang-panel a.selected { background: #ededed; color: #181818;}
+    .lang-panel .small-note {display:block;margin-top:10px;color:#777;font-size:.91em;}
+    @media (max-width: 700px) {
+      .section-btn { width: 98vw; min-width: unset; padding-left: 7vw; padding-right: 7vw;}
+      .admin-panel { max-width: unset; }
+      .toolbar { right: 12px; top: 8px;}
+      h1 { margin-top: 36px; }
+      .breadcrumbs { margin-left: 2vw;}
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button class="toolbar-btn" onclick="showLangPanel()" title="EN — Язык">EN</button>
+    <button class="toolbar-btn" onclick="showThemeInfo()" title="Тема оформления">&#9675;</button>
+    <button class="toolbar-btn" onclick="showSettingsInfo()" title="Настройки">&#9881;</button>
+    <button class="toolbar-btn" onclick="toggleAdmin()" id="adminSwitch">Войти как Админ</button>
+  </div>
+  <h1 id="header">BrelyntOS</h1>
+  <div class="breadcrumbs" id="breadcrumbs" style="display:none"></div>
+  <div class="main-menu" id="mainMenu"></div>
+  <div id="sectionPage" style="display:none"></div>
+  <div class="lang-panel" id="langPanel" style="display:none;">
+    <b>Выберите язык интерфейса:</b><br>
+    <a href="#" onclick="selectLang('ru');return false;">RU</a>
+    <a href="#" onclick="selectLang('cz');return false;">CZ</a>
+    <a href="#" onclick="selectLang('en');return false;" class="selected">EN</a>
+    <a href="#" onclick="selectLang('de');return false;">DE</a>
+    <a href="#" onclick="selectLang('es');return false;">ES</a>
+    <span class="small-note">Пока доступны только заглушки</span>
+  </div>
+  <!-- Модальные окна — как прежде -->
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <label>Название раздела:<br>
+        <input id="sectionTitleInput" maxlength="40">
+      </label>
+      <label style="margin-top:14px;">Описание:<br>
+        <textarea id="sectionDescInput" rows="4"></textarea>
+      </label>
+      <div class="modal-actions">
+        <button type="button" onclick="closeModal('editModal')">Отмена</button>
+        <button type="button" onclick="saveSectionEdit()">Сохранить</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal" id="addModal">
+    <div class="modal-content">
+      <label>Название нового раздела:<br>
+        <input id="addTitleInput" maxlength="40">
+      </label>
+      <label style="margin-top:14px;">Описание:<br>
+        <textarea id="addDescInput" rows="3"></textarea>
+      </label>
+      <div class="modal-actions">
+        <button type="button" onclick="closeModal('addModal')">Отмена</button>
+        <button type="button" onclick="saveAddSection()">Добавить</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal" id="walletEditModal">
+    <div class="modal-content">
+      <label>Название способа оплаты:<br><input id="payTitleInput" maxlength="24"></label>
+      <label>Реквизиты (адрес, номер карты и т.п.):<br><textarea id="payRekvInput" rows="2"></textarea></label>
+      <label>Ссылка (если нужна):<br><input id="payLinkInput"></label>
+      <div class="modal-actions">
+        <button type="button" onclick="closeModal('walletEditModal')">Отмена</button>
+        <button type="button" onclick="saveWalletMethod()">Сохранить</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    // ----- ДАННЫЕ -----
+    const defaultSections = [
+      { key: 'wallet', title: 'Кошелёк', desc: 'Управление токенами, баланс, переводы, история, калькулятор',
+        modules: [
+          { type: 'buy', title: 'Покупка токена', desc: 'Покупка токенов через BTC, ETH, PayPal, QR-код и др.',
+            payMethods: [
+              {title: 'BTC', rekv: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', link: '', note: 'Для переводов из РФ и мира'},
+              {title: 'Эфир', rekv: '0x1246feEE...', link: '', note: 'ERC-20'},
+              {title: 'PayPal', rekv: 'pay@yourdomain.com', link: '', note: 'Только для EUR, USD'},
+              {title: 'Карта', rekv: '**** **** **** 5678', link: '', note: 'Перевод на карту любого банка'},
+              {title: 'QR kod', rekv: 'https://revolut.me/alrxeyok6l', link: 'https://revolut.me/alrxeyok6l', note: 'Перейти по ссылке.'}
+            ]
+          },
+          // Модуль истории транзакций
+          { type: 'history', title: 'История транзакций', desc: 'Все входящие и исходящие переводы токенов.' }
+        ]
+      },
+      { key: 'cloud', title: 'P2P Cloud', desc: 'Резервное копирование, восстановление, backup функции', modules: [] },
+      { key: 'faq', title: 'FAQ', desc: 'Часто задаваемые вопросы, ответы', modules: [] }
+    ];
+    let sections = JSON.parse(localStorage.getItem('brelynt-sections') || 'null') || defaultSections;
+    let adminMode = false;
+    let editingSectionKey = null;
+    let editingModuleIndex = null;
+    let editingPayIndex = null;
+    let navStack = [];
+
+    // ----- ГЛАВНОЕ МЕНЮ -----
+    function renderMenu() {
+      document.getElementById('header').textContent = 'BrelyntOS';
+      document.getElementById('breadcrumbs').style.display = 'none';
+      document.getElementById('mainMenu').style.display = 'flex';
+      document.getElementById('mainMenu').innerHTML = '';
+      document.getElementById('sectionPage').style.display = 'none';
+      document.getElementById('langPanel').style.display = 'none';
+      let html = '';
+      sections.forEach(sec => {
+        html += `<button class="section-btn" onclick="openSection('${sec.key}')">
+            <span>${sec.title}</span>
+            <span class="section-desc">${sec.desc}</span>
+          </button>`;
+      });
+      if (adminMode) {
+        html += `<button class="section-btn" onclick="openAddModal()">➕ Добавить раздел</button>`;
+      }
+      document.getElementById('mainMenu').innerHTML = html;
+    }
+
+    // ----- РАЗДЕЛ -----
+    function openSection(key) {
+      let sec = sections.find(s => s.key === key);
+      if (!sec) return;
+      navStack = [{ title: 'Главная', cb: renderMenu }, { title: sec.title, cb: () => openSection(key) }];
+      renderSection(sec);
+    }
+    function renderSection(sec) {
+      document.getElementById('mainMenu').style.display = 'none';
+      document.getElementById('sectionPage').style.display = 'block';
+      document.getElementById('langPanel').style.display = 'none';
+      renderBreadcrumbs();
+      let html = `<h2>${sec.title}</h2>
+        <div class="section-desc" style="margin-bottom:15px;">${sec.desc || ''}</div>`;
+      (sec.modules||[]).forEach((mod,i) => {
+        if (mod.type === 'buy') {
+          html += `<div class="admin-panel"><b style="font-size:1.05em;">${mod.title}</b>
+            <div style="margin:10px 0 12px 0; color:#bcbcbc; font-size:.98em;">${mod.desc || ''}</div>
+            <div id="payBtns">${renderPayBtns(sec.key,i,mod.payMethods)}</div>
+            ${adminMode ? `<div class="edit-bar">
+              <button onclick="openPayEditModal('${sec.key}',${i},-1)">➕ Добавить способ оплаты</button>
+            </div>` : ''}
+          </div>`;
+        }
+        // Добавляем блок истории транзакций
+        if (mod.type === 'history') {
+          html += renderHistoryModule(sec, i);
+        }
+      });
+      if (adminMode) {
+        html += `<div class="edit-bar" style="margin-top:24px;">
+          <button onclick="openSectionEditModal('${sec.key}')">✏️ Редактировать раздел</button>
+          <button onclick="deleteSection('${sec.key}')">🗑️ Удалить раздел</button>
+        </div>`;
+      }
+      html += `<button class="section-btn" onclick="goBack()" style="width:180px;margin:30px auto 0 auto; font-size:1.12em;">Назад</button>`;
+      document.getElementById('sectionPage').innerHTML = html;
+    }
+
+    function renderPayBtns(sectionKey,modIndex,payMethods) {
+      let html = `<div class="pay-btns">`;
+      payMethods.forEach((pay, idx) => {
+        html += `<button class="pay-btn" onclick="showPayData('${sectionKey}',${modIndex},${idx})">${pay.title}</button>`;
+      });
+      html += `</div>`;
+      return html;
+    }
+
+    function showPayData(sectionKey,modIndex,payIndex) {
+      let sec = sections.find(s=>s.key===sectionKey);
+      if (!sec) return;
+      let mod = sec.modules[modIndex];
+      let pay = mod.payMethods[payIndex];
+      navStack.push({title: pay.title, cb: ()=>showPayData(sectionKey,modIndex,payIndex)});
+      renderBreadcrumbs();
+      let html = `<div class="pay-data"><b>${pay.title}:</b> ${pay.rekv?pay.rekv:''}
+        ${pay.link ? `<div style="margin-top:3px;"><a href="${pay.link}" target="_blank" style="color:#ededed;text-decoration:underline;">Открыть ссылку</a></div>` : ''}
+        ${pay.rekv ? `<br><button class="copy-btn" onclick="copyToClipboard('${pay.rekv}')">Скопировать реквизиты</button>` : ''}
+        ${pay.note?`<div class="pay-note">${pay.note}</div>`:''}
+        </div>`;
+      html += `<button class="section-btn" onclick="goBack()" style="width:160px;margin:30px auto 0 auto;font-size:1.07em;">Назад</button>`;
+      if (adminMode) {
+        html += `<div class="edit-bar" style="margin-top:19px;">
+          <button onclick="openPayEditModal('${sectionKey}',${modIndex},${payIndex})">✏️ Редактировать</button>
+          <button onclick="deletePayMethod('${sectionKey}',${modIndex},${payIndex})">🗑️ Удалить</button>
+        </div>`;
+      }
+      document.getElementById('sectionPage').innerHTML = html;
+    }
+
+    // Модуль “История транзакций”
+    function renderHistoryModule(sec, modIndex) {
+      let txs = JSON.parse(localStorage.getItem('brelynt-tx') || '[]');
+      let html = `
+        <div class="admin-panel">
+          <b style="font-size:1.05em;">История транзакций</b>
+          <div style="margin:10px 0 12px 0; color:#bcbcbc; font-size:.98em;">Все операции вашего кошелька</div>
+          <table style="width:100%;font-size:.97em;">
+            <tr>
+              <th>Дата</th><th>Тип</th><th>Сумма</th><th>Адрес</th><th>Комментарий</th>
+            </tr>
+            ${txs.length ? txs.map(tx => `
+              <tr>
+                <td>${tx.date || ''}</td>
+                <td>${tx.type || ''}</td>
+                <td>${tx.amount || ''}</td>
+                <td>${tx.address || ''}</td>
+                <td>${tx.comment || ''}</td>
+              </tr>
+            `).join('') : '<tr><td colspan="5" style="text-align:center;color:#aaa;">Нет транзакций</td></tr>'}
+          </table>
+          ${adminMode ? `
+            <div class="edit-bar" style="margin-top:20px;">
+              <button onclick="addTestTx()">➕ Добавить тестовую транзакцию</button>
+              <button onclick="clearAllTxs()">🗑️ Очистить историю</button>
+            </div>
+          ` : ''}
+        </div>
+      `;
+      return html;
+    }
+    // Добавляем глобальные функции для тестов:
+    window.addTestTx = function() {
+      let txs = JSON.parse(localStorage.getItem('brelynt-tx') || '[]');
+      txs.push({
+        date: (new Date()).toLocaleString(),
+        type: Math.random() > 0.5 ? 'Приход' : 'Расход',
+        amount: (Math.random() * 100).toFixed(2),
+        address: '0xTEST' + Math.floor(Math.random() * 10000),
+        comment: 'Тест'
+      });
+      localStorage.setItem('brelynt-tx', JSON.stringify(txs));
+      renderSection(sections.find(s => s.key === 'wallet'));
+    };
+    window.clearAllTxs = function() {
+      if (confirm('Очистить историю транзакций?')) {
+        localStorage.removeItem('brelynt-tx');
+        renderSection(sections.find(s => s.key === 'wallet'));
+      }
+    };
+
+    // ----- Админ-функции -----
+    function toggleAdmin() {
+      adminMode = !adminMode;
+      document.getElementById('adminSwitch').textContent = adminMode ? "Выйти из Админа" : "Войти как Админ";
+      renderMenu();
+    }
+    function openSectionEditModal(key) {
+      editingSectionKey = key;
+      let sec = sections.find(s=>s.key===key);
+      document.getElementById('sectionTitleInput').value = sec.title;
+      document.getElementById('sectionDescInput').value = sec.desc || '';
+      openModal('editModal');
+    }
+    function saveSectionEdit() {
+      let sec = sections.find(s=>s.key===editingSectionKey);
+      sec.title = document.getElementById('sectionTitleInput').value.trim()||'Без названия';
+      sec.desc = document.getElementById('sectionDescInput').value.trim();
+      saveSections();
+      closeModal('editModal');
+      renderSection(sec);
+    }
+    function openAddModal() {
+      document.getElementById('addTitleInput').value = '';
+      document.getElementById('addDescInput').value = '';
+      openModal('addModal');
+    }
+    function saveAddSection() {
+      let title = document.getElementById('addTitleInput').value.trim() || 'Без названия';
+      let desc = document.getElementById('addDescInput').value.trim();
+      let newKey = 'section' + Date.now();
+      sections.push({key:newKey, title, desc, modules:[]});
+      saveSections();
+      closeModal('addModal');
+      renderMenu();
+    }
+    function deleteSection(key) {
+      if (!confirm('Удалить раздел?')) return;
+      sections = sections.filter(s=>s.key!==key);
+      saveSections();
+      renderMenu();
+    }
+
+    // --- Модули кошелька ---
+    function openPayEditModal(sectionKey,modIndex,payIndex) {
+      editingSectionKey = sectionKey;
+      editingModuleIndex = modIndex;
+      editingPayIndex = payIndex;
+      let sec = sections.find(s=>s.key===sectionKey);
+      let pay = (payIndex>-1) ? sec.modules[modIndex].payMethods[payIndex] : {title:'',rekv:'',link:'',note:''};
+      document.getElementById('payTitleInput').value = pay.title;
+      document.getElementById('payRekvInput').value = pay.rekv;
+      document.getElementById('payLinkInput').value = pay.link||'';
+      openModal('walletEditModal');
+    }
+    function saveWalletMethod() {
+      let sec = sections.find(s=>s.key===editingSectionKey);
+      let mod = sec.modules[editingModuleIndex];
+      let arr = mod.payMethods;
+      let obj = {
+        title: document.getElementById('payTitleInput').value.trim(),
+        rekv: document.getElementById('payRekvInput').value.trim(),
+        link: document.getElementById('payLinkInput').value.trim()
+      };
+      if (editingPayIndex>-1) arr[editingPayIndex] = obj;
+      else arr.push(obj);
+      saveSections();
+      closeModal('walletEditModal');
+      renderSection(sec);
+    }
+    function deletePayMethod(sectionKey,modIndex,payIndex) {
+      if (!confirm('Удалить способ оплаты?')) return;
+      let sec = sections.find(s=>s.key===sectionKey);
+      let mod = sec.modules[modIndex];
+      mod.payMethods.splice(payIndex,1);
+      saveSections();
+      renderSection(sec);
+    }
+
+    // ---- Крошки ----
+    function renderBreadcrumbs() {
+      let bc = navStack.map((step, i) => `<a href="#" onclick="breadcrumbNav(${i});return false;">${step.title}</a>`).join(' / ');
+      document.getElementById('breadcrumbs').innerHTML = bc;
+      document.getElementById('breadcrumbs').style.display = 'block';
+    }
+    function goBack() {
+      if (navStack.length > 1) navStack.pop();
+      let last = navStack[navStack.length-1];
+      last.cb();
+    }
+    function breadcrumbNav(idx) {
+      navStack = navStack.slice(0, idx+1);
+      let last = navStack[navStack.length-1];
+      last.cb();
+    }
+
+    // --- Копировать реквизиты ---
+    function copyToClipboard(txt) {
+      navigator.clipboard.writeText(txt);
+      alert('Скопировано: ' + txt);
+    }
+
+    // --- Язык, тема, настройки ---
+    function showLangPanel() {
+      document.getElementById('mainMenu').style.display = 'none';
+      document.getElementById('sectionPage').style.display = 'none';
+      document.getElementById('langPanel').style.display = 'block';
+      document.getElementById('breadcrumbs').style.display = 'none';
+      document.getElementById('header').textContent = 'Язык';
+    }
+    function selectLang(code) {
+      alert('Пока доступны только заглушки. Вы выбрали: ' + code.toUpperCase());
+      renderMenu();
+    }
+    function showThemeInfo() {
+      alert('Темы пока не реализованы.');
+    }
+    function showSettingsInfo() {
+      alert('Настройки пока не реализованы.');
+    }
+
+    // ---- Модальные окна ----
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    // ---- Сохраняем ----
+    function saveSections() { localStorage.setItem('brelynt-sections', JSON.stringify(sections)); }
+
+    // ---- Инициализация ----
+    renderMenu();
+    window.openSection = openSection;
+    window.renderMenu = renderMenu;
+    window.goBack = goBack;
+    window.breadcrumbNav = breadcrumbNav;
+
+  </script>
+<script src="../js/p2p.js"></script>
+<script>
+  startP2P("ws://localhost:9090");
+</script></body>
+</html>
