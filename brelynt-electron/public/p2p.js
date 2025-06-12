@@ -2,13 +2,15 @@
 
 let peers = [];
 let ws = null;
+let myName = localStorage.getItem('brelynt-name') || 'User';
+const handshaked = new Set();
 
 function startP2P(serverAddr = "ws://localhost:9090") {
     ws = new WebSocket(serverAddr);
 
     ws.onopen = () => {
         console.log("P2P: соединение установлено.");
-        ws.send(JSON.stringify({ type: "join", name: "User" }));
+        ws.send(JSON.stringify({ type: "join", name: myName }));
     };
 
     ws.onmessage = (event) => {
@@ -19,6 +21,13 @@ function startP2P(serverAddr = "ws://localhost:9090") {
         }
         if (msg.type === "tx") {
             addRemoteTx(msg.tx);
+        }
+        if (msg.type === "handshake") {
+            console.log("Handshake от", msg.name);
+            if (msg.name !== myName && !handshaked.has(msg.name)) {
+                handshaked.add(msg.name);
+                ws.send(JSON.stringify({ type: "handshake", name: myName }));
+            }
         }
     };
 
