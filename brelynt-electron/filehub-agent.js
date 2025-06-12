@@ -41,13 +41,18 @@ app.get('/api/tree', (req, res) => {
 
 // Прочитать файл
 app.get('/api/file', (req, res) => {
-
+    const requestedPath = req.query.path || '';
+    const filePath = path.resolve(ROOT_DIR, requestedPath);
+    if (!filePath.startsWith(ROOT_DIR)) {
+        return res.status(400).send('Invalid path');
+    }
     res.send(fs.readFileSync(filePath, 'utf-8'));
 });
 
 // Записать (изменить или создать) файл
 app.post('/api/file', (req, res) => {
-
+    const requestedPath = req.body.path || '';
+    const filePath = path.resolve(ROOT_DIR, requestedPath);
     if (!filePath.startsWith(ROOT_DIR)) {
         return res.status(400).send('Invalid path');
     }
@@ -57,7 +62,11 @@ app.post('/api/file', (req, res) => {
 
 // Удалить файл
 app.delete('/api/file', (req, res) => {
-
+    const requestedPath = req.body.path || '';
+    const filePath = path.resolve(ROOT_DIR, requestedPath);
+    if (!filePath.startsWith(ROOT_DIR)) {
+        return res.status(400).send('Invalid path');
+    }
     fs.unlinkSync(filePath);
     res.send('Deleted');
 });
