@@ -46,27 +46,13 @@ app.get('/api/tree', (req, res) => {
 
 // --- API: получить файл ---
 app.get('/api/file', (req, res) => {
-    const requested = path.normalize(req.query.path || '');
-    const filePath = path.resolve(ROOT_DIR, requested);
-    if (!filePath.startsWith(ROOT_DIR)) {
-        return res.status(400).send('Invalid path');
-    }
-    if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
-        return res.status(404).send('Not found');
-    }
+
     res.send(fs.readFileSync(filePath, 'utf-8'));
 });
 
 // --- API: сохранить файл ---
 app.post('/api/file', (req, res) => {
-    const requested = path.normalize(req.query.path || '');
-    const filePath = path.resolve(ROOT_DIR, requested);
-    if (!filePath.startsWith(ROOT_DIR)) {
-        return res.status(400).send('Invalid path');
-    }
-    if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
-        return res.status(404).send('Not found');
-    }
+
     fs.writeFileSync(filePath, req.body.content);
     res.send('OK');
 });
