@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, Menu, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs-extra');
+let BRELYNT_PATH = process.env.BRELYNT_PATH;
 
 function createWindow () {
   Menu.setApplicationMenu(null);
