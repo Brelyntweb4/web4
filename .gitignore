@@ -19,6 +19,7 @@ desktop.ini
 backup/
 *_backup/
 full-backup.ps1
+structure.txt
 
 # IDE/project files
 *.suo
