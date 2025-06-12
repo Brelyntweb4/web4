@@ -17,6 +17,7 @@ desktop.ini
 
 # Backup files
 backup/
+*_backup/
 full-backup.ps1
 
 # IDE/project files
