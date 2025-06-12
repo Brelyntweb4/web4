@@ -117,6 +117,9 @@
 > 7. Документировать все шаги, добавить тестовые сценарии и инструкции для команды.
 
 ---
+### Creating a release
+Push a tag starting with `v` (e.g., `git tag v1.0 && git push origin v1.0`).
+GitHub Actions will build `web4.zip` and attach it to the new release automatically.
 
 ## Контакты
 
