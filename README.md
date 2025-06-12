@@ -106,8 +106,8 @@
 
 ## Контакты
 
-- Telegram: [@web4contact](https://t.me/web4contacty)  
-- Website: [https://web4os.io](https://web4osy.io) (готовится к запуску)
+- Telegram: [@web4contacty](https://t.me/web4contacty)  
+- Website: [https://web4osy.io](https://web4osy.io) (готовится к запуску)
 
 ---
 
