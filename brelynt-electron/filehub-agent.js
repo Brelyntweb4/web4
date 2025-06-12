@@ -1,4 +1,6 @@
 // filehub-agent.js
+// Usage: run `node filehub-agent.js` to expose a minimal file API on port 3040
+// limited to the `public` directory.
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -39,22 +41,32 @@ app.get('/api/tree', (req, res) => {
 
 // Прочитать файл
 app.get('/api/file', (req, res) => {
-    const filePath = path.join(ROOT_DIR, req.query.path);
-    if (!fs.existsSync(filePath)) return res.status(404).send('Not found');
+    const requestedPath = req.query.path || '';
+    const filePath = path.resolve(ROOT_DIR, requestedPath);
+    if (!filePath.startsWith(ROOT_DIR)) {
+        return res.status(400).send('Invalid path');
+    }
     res.send(fs.readFileSync(filePath, 'utf-8'));
 });
 
 // Записать (изменить или создать) файл
 app.post('/api/file', (req, res) => {
-    const filePath = path.join(ROOT_DIR, req.query.path);
+    const requestedPath = req.body.path || '';
+    const filePath = path.resolve(ROOT_DIR, requestedPath);
+    if (!filePath.startsWith(ROOT_DIR)) {
+        return res.status(400).send('Invalid path');
+    }
     fs.writeFileSync(filePath, req.body.content, 'utf-8');
     res.send('OK');
 });
 
 // Удалить файл
 app.delete('/api/file', (req, res) => {
-    const filePath = path.join(ROOT_DIR, req.query.path);
-    if (!fs.existsSync(filePath)) return res.status(404).send('Not found');
+    const requestedPath = req.body.path || '';
+    const filePath = path.resolve(ROOT_DIR, requestedPath);
+    if (!filePath.startsWith(ROOT_DIR)) {
+        return res.status(400).send('Invalid path');
+    }
     fs.unlinkSync(filePath);
     res.send('Deleted');
 });
