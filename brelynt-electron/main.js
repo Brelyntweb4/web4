@@ -2,7 +2,16 @@ const { app, BrowserWindow, ipcMain, Menu, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs-extra');
 
-const BRELYNT_PATH = 'D:/BrelyntApp/Brelynt';
+// Determine Brelynt directory dynamically. An explicit BRELYNT_DIR
+// environment variable has priority; otherwise use the Electron
+// userData path.
+const getBrelyntPath = () => {
+  const envPath = process.env.BRELYNT_DIR;
+  if (envPath && envPath.trim()) {
+    return envPath;
+  }
+  return path.join(app.getPath('userData'), 'Brelynt');
+};
 
 function createWindow () {
   Menu.setApplicationMenu(null);
@@ -23,9 +32,10 @@ app.whenReady().then(createWindow);
 
 ipcMain.handle('get-brelynt-structure', async () => {
   try {
-    if (!fs.existsSync(BRELYNT_PATH)) {
-      console.log('[DEBUG] Папка не найдена:', BRELYNT_PATH);
-      dialog.showErrorBox('Ошибка', `Папка не найдена: ${BRELYNT_PATH}`);
+    const brelyntPath = getBrelyntPath();
+    if (!fs.existsSync(brelyntPath)) {
+      console.log('[DEBUG] Папка Brelynt не найдена:', brelyntPath);
+      dialog.showErrorBox('Ошибка', `Папка Brelynt не найдена по пути: ${brelyntPath}`);
       return [];
     }
     function readDirRecursive(dir) {
@@ -47,7 +57,7 @@ ipcMain.handle('get-brelynt-structure', async () => {
         }
       });
     }
-    const structure = readDirRecursive(BRELYNT_PATH);
+    const structure = readDirRecursive(brelyntPath);
     console.log('[DEBUG] Структура папки:', JSON.stringify(structure, null, 2));
     return structure;
   } catch (error) {
