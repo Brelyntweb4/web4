@@ -1,6 +1,19 @@
 # install-buy-module.ps1 — Windows PowerShell 5.x совместимость
 
-$AppDir    = "D:\BrelyntApp\brelynt-electron"
+<#
+Usage:
+    .\install-buy-module.ps1 [-AppDir <path>]
+
+The optional **-AppDir** parameter sets the target directory of the Brelynt
+Electron application. If omitted, the script checks the `BRELYNT_APPDIR`
+environment variable. When neither is provided, the directory
+`$PSScriptRoot\brelynt-electron` is used by default.
+#>
+
+param(
+    [string]$AppDir = $(if ($env:BRELYNT_APPDIR) { $env:BRELYNT_APPDIR } else { "$PSScriptRoot\brelynt-electron" })
+)
+
 $Frontend  = "$AppDir\index.html"
 $BuyJS     = "$AppDir\buyToken.js"
 $BuyCSS    = "$AppDir\buyToken.css"
